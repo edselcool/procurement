@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Edit PR {{ pr.id }}{% endblock %}
+{% block content %}
+<h3>Edit Purchase Request</h3>
+<form method="post">
+
+  <div class="mb-3">
+    <label>Title</label>
+    <input type="text" name="title" class="form-control" value="{{ pr.title }}" required>
+  </div>
+
+  <div class="mb-3">
+    <label>Description</label>
+    <textarea name="description" class="form-control">{{ pr.description }}</textarea>
+  </div>
+
+  <h4>Line Items</h4>
+  <table id="line-items-table" class="table">
+    <thead>
+      <tr>
+        <th>Item Name</th>
+        <th>Quantity</th>
+        <th>Unit</th>
+        <th>Unit Price</th>
+        <th>Remove</th>
+      </tr>
+    </thead>
+    <tbody id="line-items-body">
+      {% for item in line_items %}
+      <tr>
+        <td><input type="text" name="item_name[]" class="form-control" value="{{ item.item_name }}" required></td>
+        <td><input type="number" name="quantity[]" class="form-control" value="{{ item.quantity }}" min="1" required></td>
+        <td><input type="text" name="unit[]" class="form-control" value="pcs" required></td>
+        <td><input type="number" name="unit_price[]" class="form-control" value="{{ item.unit_price }}" step="0.01" required></td>
+        <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">X</button></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button type="button" class="btn btn-secondary" onclick="addRow()">Add Item</button>
+
+  <br><br>
+  <button type="submit" class="btn btn-primary">Save Changes</button>
+  <a href="{{ url_for('pr_view', pr_id=pr.id) }}" class="btn btn-secondary">Cancel</a>
+</form>
+
+<script>
+function addRow() {
+    const tableBody = document.getElementById('line-items-body');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input type="text" name="item_name[]" class="form-control" required></td>
+        <td><input type="number" name="quantity[]" class="form-control" value="1" min="1" required></td>
+        <td><input type="text" name="unit[]" class="form-control" value="pcs" required></td>
+        <td><input type="number" name="unit_price[]" class="form-control" step="0.01" value="0" required></td>
+        <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">X</button></td>
+    `;
+    tableBody.appendChild(row);
+}
+
+function removeRow(button) {
+    button.closest('tr').remove();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Activity Balances</h2>
+
+<!-- Totals -->
+<div class="mb-3">
+    <strong>Total PR Amount:</strong> {{ total_pr }} |
+    <strong>Total PO Amount:</strong> {{ total_po }} |
+    <strong>Total Balance:</strong> {{ total_balance }}
+</div>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Activity / PR Title</th>
+            <th>PR Total</th>
+            <th>PO Total</th>
+            <th>Balance</th>
+            <th>View Details</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bal in balances %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ bal.activity_name }}</td>
+            <td>{{ bal.pr_total_amount|round(2) }}</td>
+            <td>{{ bal.po_total_amount|round(2) }}</td>
+            <td>{{ bal.balance_amount|round(2) }}</td>
+            <td>
+                <a href="{{ url_for('balance_activity', pr_id=bal.pr_id) }}" class="btn btn-info btn-sm">
+                    Details
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

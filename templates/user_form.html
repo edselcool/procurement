@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ 'Edit User' if user else 'Add User' }}</h3>
+
+<form method="POST">
+  <div class="mb-3">
+    <label>Username</label>
+    <input type="text" name="username" class="form-control" value="{{ user.username if user else '' }}" required>
+  </div>
+
+  <div class="mb-3">
+    <label>Password {% if user %}(leave blank to keep current){% endif %}</label>
+    <input type="password" name="password" class="form-control">
+  </div>
+
+  <div class="mb-3">
+    <label>Role</label>
+    <select name="role" class="form-control" required>
+      <option value="admin" {% if user and user.role=='admin' %}selected{% endif %}>Admin</option>
+      <option value="approver" {% if user and user.role=='approver' %}selected{% endif %}>Approver</option>
+      <option value="requester" {% if user and user.role=='requester' %}selected{% endif %}>Requester</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-success">Save</button>
+  <a href="{{ url_for('users') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

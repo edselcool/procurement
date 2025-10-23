@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}POs for PR {{ pr.id }}{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <h3 class="card-title mb-3">Purchase Orders for PR #{{ pr.id }}</h3>
+    <p><strong>Title:</strong> {{ pr.title }}</p>
+    <p><strong>Description:</strong> {{ pr.description }}</p>
+
+    {% if supplier_groups %}
+      {% for supplier, orders in supplier_groups.items() %}
+      <div class="mt-4">
+        <h5>Supplier: {{ supplier }}</h5>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>PO ID</th>
+              <th>Item Name / Description</th>
+              <th>Brand Name</th>
+              <th>Quantity</th>
+              <th>Unit</th>
+              <th>Unit Price (PR)</th>
+              <th>Quotation Price</th>
+              <th>Total</th>
+              {% if current_user.role in ['admin', 'approver'] %}
+              <th>Actions</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for o in orders %}
+            <tr id="row-{{ o.id }}">
+              <td>{{ o.id }}</td>
+              <td>{{ o.item.item_name if o.item else 'N/A' }}</td>
+
+              <!-- Brand Name -->
+              <td>
+                {% if current_user.role in ['admin', 'approver'] %}
+                  <span class="text-display">{{ o.brand_name }}</span>
+                  <input type="text" class="form-control text-input d-none" value="{{ o.brand_name }}">
+                {% else %}
+                  {{ o.brand_name }}
+                {% endif %}
+              </td>
+
+              <!-- Quantity & Unit -->
+              <td>{{ o.item.quantity if o.item else 0 }}</td>
+              <td>{{ o.item.unit if o.item else 'pcs' }}</td>
+
+              <!-- Unit Price (from PR) -->
+              <td>{{ o.item.unit_price if o.item else 0.00 }}</td>
+
+              <!-- Quotation Price -->
+              <td>
+                {% if current_user.role in ['admin', 'approver'] %}
+                  <span class="text-display">{{ o.quotation_price }}</span>
+                  <input type="number" class="form-control text-input d-none" step="0.01" value="{{ o.quotation_price }}">
+                {% else %}
+                  {{ o.quotation_price }}
+                {% endif %}
+              </td>
+
+              <!-- Total -->
+              <!-- Total per item -->
+              <td>{{ (o.quotation_price * o.item.quantity)|round(2) if o.item else 0.00 }}</td>
+
+
+              <!-- Actions -->
+              {% if current_user.role in ['admin', 'approver'] %}
+              <td>
+                <button class="btn btn-sm btn-primary edit-btn" onclick="enableEdit({{ o.id }})">Edit</button>
+                <button class="btn btn-sm btn-success save-btn d-none" onclick="saveChanges({{ o.id }})">Save</button>
+                <form method="POST" action="{{ url_for('delete_po', po_id=o.id) }}" style="display:inline;">
+                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+              </td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <p><strong>Total for {{ supplier }}:</strong> {{ supplier_totals[supplier] }}</p>
+      </div>
+      {% endfor %}
+
+      <hr>
+      <h4>Grand Total: {{ grand_total }}</h4>
+    {% else %}
+      <p>No purchase orders recorded for this PR.</p>
+    {% endif %}
+
+    <a href="{{ url_for('purchase_orders') }}" class="btn btn-secondary mt-3">Back</a>
+  </div>
+</div>
+
+{% if current_user.role in ['admin', 'approver'] %}
+<script>
+function enableEdit(rowId) {
+  const row = document.getElementById(`row-${rowId}`);
+  row.querySelectorAll('.text-display').forEach(el => el.classList.add('d-none'));
+  row.querySelectorAll('.text-input').forEach(el => el.classList.remove('d-none'));
+  row.querySelector('.edit-btn').classList.add('d-none');
+  row.querySelector('.save-btn').classList.remove('d-none');
+}
+
+function saveChanges(rowId) {
+  const row = document.getElementById(`row-${rowId}`);
+  const inputs = row.querySelectorAll('.text-input');
+  const brandName = inputs[0].value;
+  const quotationPrice = inputs[1].value;
+
+  fetch(`/po/update/${rowId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ brand_name: brandName, quotation_price: quotationPrice })
+  })
+  .then(response => {
+    if (response.ok) {
+      row.querySelectorAll('.text-display')[0].innerText = brandName;
+      row.querySelectorAll('.text-display')[1].innerText = quotationPrice;
+
+      row.querySelectorAll('.text-display').forEach(el => el.classList.remove('d-none'));
+      row.querySelectorAll('.text-input').forEach(el => el.classList.add('d-none'));
+
+      row.querySelector('.edit-btn').classList.remove('d-none');
+      row.querySelector('.save-btn').classList.add('d-none');
+    } else {
+      alert('Failed to update item');
+    }
+  })
+  .catch(err => {
+    alert('Error saving changes');
+    console.error(err);
+  });
+}
+</script>
+{% endif %}
+{% endblock %}

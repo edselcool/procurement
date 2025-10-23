@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Create Purchase Order{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <h3 class="card-title mb-3">Purchase Order for PR #{{ pr.id }}</h3>
+    <p><strong>Title:</strong> {{ pr.title }}</p>
+    <p><strong>Description:</strong> {{ pr.description }}</p>
+
+    <form method="POST">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Item Name/Description</th>
+            <th>Brand Name</th>
+            <th>Quantity</th>
+            <th>Unit</th>
+            <th>Unit Price (PR)</th>
+            <th>Supplier</th>
+            <th>Quotation Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>
+              {{ item.item_name }}
+              <input type="hidden" name="item_id[]" value="{{ item.id }}">
+            </td>
+            <td><input type="text" name="brand_name[]" class="form-control" required></td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.unit }}</td>
+            <td>{{ item.unit_price }}</td>
+            <td>
+              <select name="supplier_name[]" class="form-control" required>
+                <option value="">-- Select Supplier --</option>
+                {% for supplier in suppliers %}
+                  <option value="{{ supplier.name }}">{{ supplier.name }}</option>
+                {% endfor %}
+              </select>
+
+            </td>
+            <td>
+              <input type="number" name="quotation_price[]" class="form-control" step="0.01" required>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <button type="submit" class="btn btn-primary">Save Purchase Order</button>
+      <a href="{{ url_for('pr_view', pr_id=pr.id) }}" class="btn btn-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PR #{{ pr.id }} - Print</title>
+    <style>
+        /* Add your template CSS here to match your Excel style */
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 5px; text-align: left; }
+        .no-print { display: none; }
+    </style>
+</head>
+<body>
+    <h2>Purchase Request #{{ pr.id }}</h2>
+    <p><strong>Title:</strong> {{ pr.title }}</p>
+    <p><strong>Created by:</strong> {{ user.username }}</p>
+    <p><strong>Date:</strong> {{ pr.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    <p><strong>Status:</strong> {{ pr.status }}</p>
+
+    <h3>Line Items</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Unit</th>
+                <th>Unit Price</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in line_items %}
+            <tr>
+                <td>{{ item.item_name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.unit }}</td>
+                <td>{{ item.unit_price }}</td>
+                <td>{{ item.quantity * item.unit_price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p><strong>Total: </strong>{{ pr.total }}</p>
+
+    <button onclick="window.print()">Print</button>
+</body>
+</html>

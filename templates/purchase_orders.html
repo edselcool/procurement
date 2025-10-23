@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Purchase Orders{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <h3 class="card-title mb-3">Purchase Order Activities</h3>
+
+    {% if prs %}
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>PR #</th>
+          <th>Title</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pr in prs %}
+        <tr>
+          <td>{{ pr.id }}</td>
+          <td>{{ pr.title }}</td>
+          <td>{{ pr.description }}</td>
+          <td>
+            <span class="badge
+              {% if pr.status == 'pending' %}bg-warning
+              {% elif pr.status == 'approved' %}bg-success
+              {% elif pr.status == 'rejected' %}bg-danger
+              {% else %}bg-secondary{% endif %}">
+              {{ pr.status }}
+            </span>
+          </td>
+          <td>
+            <!-- View Purchase Orders button: visible to all roles -->
+            <a href="{{ url_for('po_list_by_pr', pr_id=pr.id) }}" class="btn btn-sm btn-primary">
+              View Purchase Orders
+            </a>
+
+            <!-- Approve/Reject buttons: only admin/approver and pending PRs -->
+            {% if current_user.role in ['admin', 'approver'] and pr.status == 'pending' %}
+              <form method="POST" action="{{ url_for('pr_approve', pr_id=pr.id) }}" style="display:inline;">
+                <input type="hidden" name="action" value="approve">
+                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+              </form>
+              <form method="POST" action="{{ url_for('pr_approve', pr_id=pr.id) }}" style="display:inline;">
+                <input type="hidden" name="action" value="reject">
+                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+              </form>
+            {% endif %}
+
+            <!-- Edit/Delete buttons: only admin/approver -->
+            {% if current_user.role in ['admin', 'approver'] %}
+              <a href="{{ url_for('pr_edit', pr_id=pr.id) }}" class="btn btn-primary btn-sm">Edit</a>
+              <form method="POST" action="{{ url_for('pr_delete', pr_id=pr.id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p>No Purchase Requests with Purchase Orders yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

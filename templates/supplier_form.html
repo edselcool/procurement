@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}New Supplier - Procurement{% endblock %}
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <h3 class="card-title mb-3">New Supplier</h3>
+      <form method='post'>
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input name='name' class="form-control">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Contact</label>
+          <input name='contact' class="form-control">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input name='email' class="form-control">
+        </div>
+        <button type='submit' class="btn btn-primary">Create</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}New PR - Procurement{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <h3 class="card-title mb-3">Create Purchase Request</h3>
+
+    {% if current_user.role in ['admin', 'approver', 'requester'] %}
+    <form method="post">
+      <div class="mb-3">
+        <label class="form-label">Title</label>
+        <input name="title" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control" rows="4"></textarea>
+      </div>
+
+      <h4>Line Items</h4>
+      <table id="line-items-table" class="table">
+        <thead>
+          <tr>
+            <th>Item Name</th>
+            <th>Quantity</th>
+            <th>Unit</th>
+            <th>Unit Price</th>
+            <th>Remove</th>
+          </tr>
+        </thead>
+        <tbody id="line-items-body">
+          <tr>
+            <td><input type="text" name="item_name[]" class="form-control" required></td>
+            <td><input type="number" name="quantity[]" class="form-control" value="1" min="1" required></td>
+            <td><input type="text" name="unit[]" class="form-control" value="pcs" required></td>
+            <td><input type="number" name="unit_price[]" class="form-control" step="0.01" value="0" required></td>
+            <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">X</button></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button type="button" class="btn btn-secondary" onclick="addRow()">Add Item</button>
+      <button type="submit" class="btn btn-primary mt-2">Submit PR</button>
+
+    </form>
+    {% else %}
+      <div class="alert alert-warning">
+        You do not have permission to create a Purchase Request.
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if current_user.role in ['admin', 'approver', 'requester'] %}
+<script>
+function addRow() {
+  const tableBody = document.getElementById('line-items-body');
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td><input type="text" name="item_name[]" class="form-control" required></td>
+    <td><input type="number" name="quantity[]" class="form-control" value="1" min="1" required></td>
+    <td><input type="text" name="unit[]" class="form-control" value="pcs" required></td>
+    <td><input type="number" name="unit_price[]" class="form-control" step="0.01" value="0" required></td>
+    <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">X</button></td>
+  `;
+  tableBody.appendChild(row);
+}
+
+function removeRow(button) {
+  button.closest('tr').remove();
+}
+</script>
+{% endif %}
+{% endblock %}

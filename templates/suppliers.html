@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Suppliers - Procurement{% endblock %}
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3">Suppliers</h1>
+    <a class="btn btn-success" href="{{ url_for('supplier_new') }}">Add Supplier</a>
+  </div>
+
+  <table class="table table-striped">
+    <thead>
+      <tr><th>Name</th><th>Contact</th><th>Email</th></tr>
+    </thead>
+    <tbody>
+      {% for s in suppliers %}
+        <tr>
+          <td>{{ s.name }}</td>
+          <td>{{ s.contact }}</td>
+          <td>{{ s.email }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="3">No suppliers yet</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
