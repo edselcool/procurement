@@ -857,6 +857,43 @@ def verify_admin_password():
         return jsonify({'success': True})
     return jsonify({'success': False, 'error': 'Incorrect password'})
 
+@app.route('/migrate_sqlite_to_postgres')
+@login_required
+def migrate_sqlite_to_postgres():
+    if current_user.role != 'admin':
+        return "Access denied. Only admin can perform migration.", 403
+
+    sqlite_path = 'pms.db'
+    postgres_url = app.config['SQLALCHEMY_DATABASE_URI']
+
+    if not os.path.exists(sqlite_path):
+        return "SQLite database (pms.db) not found in project directory.", 404
+
+    try:
+        # Create SQLAlchemy engines
+        sqlite_engine = create_engine(f"sqlite:///{sqlite_path}")
+        postgres_engine = create_engine(postgres_url)
+
+        # Load SQLite data
+        sqlite_meta = db.metadata
+        sqlite_meta.reflect(bind=sqlite_engine)
+
+        # Create PostgreSQL tables
+        db.create_all()
+
+        # Migrate table by table
+        for table in sqlite_meta.tables.values():
+            table_name = table.name
+            rows = list(sqlite_engine.execute(table.select()))
+            if rows:
+                postgres_engine.execute(table.insert(), [dict(row) for row in rows])
+                print(f"✅ Migrated {len(rows)} rows from {table_name}")
+
+        return "✅ Migration completed successfully!", 200
+
+    except Exception as e:
+        print(e)
+        return f"❌ Migration failed: {e}", 500
 
 if __name__ == '__main__':
     # Use the PORT environment variable assigned by the hosting platform
